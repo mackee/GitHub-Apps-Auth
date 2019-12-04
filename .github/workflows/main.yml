@@ -1,0 +1,15 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@master
+    - uses: shogo82148/actions-setup-perl@v1
+      with:
+        perl-version: '5.30'
+    - run: cpanm --installdeps .
+    - run: prove -lv t
