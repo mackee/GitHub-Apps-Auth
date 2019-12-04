@@ -195,7 +195,7 @@ This must be a filename or string in the pem format. You can get a private key f
 
 B<Required: true>
 
-This parameter is the App ID of your GitHub Apps. Use the C <App ID> in the About section of your GitHub Apps page.
+This parameter is the App ID of your GitHub Apps. Use the C<App ID> in the About section of your GitHub Apps page.
 
 =head4 installation_id
 
