@@ -3,7 +3,7 @@ use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = "0.02";
+our $VERSION = "0.03";
 
 use Class::Accessor::Lite (
     rw => [qw/token expires _prefix _suffix installation_id/],
