@@ -68,11 +68,13 @@ A `installation_id` is an identifier of installation Organizations or repositori
 
     my $token  = $auth->issued_token;
 
-`issued_token` returns a API token in string.This token is cached while valid. When calling this method with condition that expired token, this method refreshes a token automatically.
+`issued_token` returns a API token in string. This token is cached while valid.
+
+When calling this method with condition that expired token, this method refreshes a token automatically.
 
 ## token
 
-This method returns an API token. Unlike C &lt;issued\_token>, this method not refresh an expired token.
+This method returns an API token. Unlike `issued_token`, this method not refresh an expired token.
 
 ## expires
 
@@ -80,7 +82,7 @@ This returns the token expiration date in the epoch.
 
 # OPERATOR OVERLOADS
 
-`GitHub::Apps::Auth` is overloaded so that \`issued\_token\` is called when evaluated as a string. So probably be usable in GitHub client that use raw string API token. Ex [Pithub](https://metacpan.org/pod/Pithub).
+`GitHub::Apps::Auth` is overloaded so that `issued_token` is called when evaluated as a string. So probably be usable in GitHub client that use raw string API token. Ex [Pithub](https://metacpan.org/pod/Pithub).
 
 # SEE ALSO
 

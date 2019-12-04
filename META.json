@@ -60,6 +60,17 @@
       }
    },
    "release_status" : "unstable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/mackee/GitHub-Apps-Auth/issues"
+      },
+      "homepage" : "https://github.com/mackee/GitHub-Apps-Auth",
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/mackee/GitHub-Apps-Auth.git",
+         "web" : "https://github.com/mackee/GitHub-Apps-Auth"
+      }
+   },
    "version" : "0.01",
    "x_authority" : "cpan:MACOPY",
    "x_serialization_backend" : "JSON::PP version 4.02",

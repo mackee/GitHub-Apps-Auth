@@ -209,11 +209,13 @@ A C<installation_id> is an identifier of installation Organizations or repositor
 
     my $token  = $auth->issued_token;
 
-C<issued_token> returns a API token in string.This token is cached while valid. When calling this method with condition that expired token, this method refreshes a token automatically.
+C<issued_token> returns a API token in string. This token is cached while valid.
+
+When calling this method with condition that expired token, this method refreshes a token automatically.
 
 =head2 token
 
-This method returns an API token. Unlike C <issued_token>, this method not refresh an expired token.
+This method returns an API token. Unlike C<issued_token>, this method not refresh an expired token.
 
 =head2 expires
 
@@ -221,7 +223,7 @@ This returns the token expiration date in the epoch.
 
 =head1 OPERATOR OVERLOADS
 
-C<GitHub::Apps::Auth> is overloaded so that `issued_token` is called when evaluated as a string. So probably be usable in GitHub client that use raw string API token. Ex L<Pithub>.
+C<GitHub::Apps::Auth> is overloaded so that C<issued_token> is called when evaluated as a string. So probably be usable in GitHub client that use raw string API token. Ex L<Pithub>.
 
 =head1 SEE ALSO
 
