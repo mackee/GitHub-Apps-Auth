@@ -9,7 +9,7 @@ GitHub::Apps::Auth - The fetcher that get a token for GitHub Apps
         private_key     => "<filename>", # when read private key from file
         private_key     => \$pk,         # when read private key from variable
         app_id          => <app_id>,
-        installation_id => <installation_id>
+        login           => <organization or user>
     );
     # This method returns the cached token inside an object.
     # However, refresh expired token automatically.
@@ -58,9 +58,15 @@ This parameter is the App ID of your GitHub Apps. Use the `App ID` in the About 
 
 #### installation\_id
 
-**Required: true**
+**Required: exclusive to** `login`
 
 A `installation_id` is an identifier of installation Organizations or repositories in GitHub Apps. This value is can be obtained from a webhook that is fired during installation. Also can be obtained from webhook's `Recent Deliveries` of GitHub apps settings.
+
+#### login
+
+**Required: exclusive to** `installation_id`
+
+`login` is used for detecting installation\_id. If not set `installation_id` and set `login`, search `installation_id` from the list of installations.
 
 # METHODS
 

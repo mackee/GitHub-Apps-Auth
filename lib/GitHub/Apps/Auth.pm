@@ -6,8 +6,8 @@ use warnings;
 our $VERSION = "0.02";
 
 use Class::Accessor::Lite (
-    rw => [qw/token expires _prefix _suffix/],
-    ro => [qw/_furl private_key app_id installation_id/],
+    rw => [qw/token expires _prefix _suffix installation_id/],
+    ro => [qw/_furl private_key app_id/],
 );
 
 use Carp;
@@ -44,13 +44,13 @@ sub new {
     if (!exists $args{app_id} || !$args{app_id}) {
         croak "app_id is required.";
     }
-    if (!exists $args{installation_id} || !$args{installation_id}) {
-        croak "installation_id is required.";
+    if (!$args{installation_id} && !$args{login}) {
+        croak "must be set installation_id or login.";
     }
 
     my $pk = Crypt::PK::RSA->new($args{private_key});
 
-    my $self = {
+    my $klass = {
         private_key => $pk,
         installation_id => $args{installation_id},
         app_id => $args{app_id},
@@ -59,7 +59,36 @@ sub new {
         _prefix => "",
         _suffix => "",
     };
-    return bless $self, $class;
+    my $self = bless $klass, $class;
+
+    if (!$self->installation_id) {
+        my $installations = $self->installations;
+        if (!exists $installations->{$args{login}}) {
+            croak $args{login} . " is not found in installations."
+        }
+        my $installation_id = $installations->{$args{login}};
+        $self->installation_id($installation_id);
+    }
+
+    return $self;
+}
+
+sub installations {
+    my $self = shift;
+
+    my $header = $self->_generate_request_header();
+
+    my $resp = $self->_furl->get(
+        "https://api.github.com/app/installations",
+        $header,
+    );
+    if (!$resp->is_success) {
+        croak "fail to fetch installations: ". $resp->content;
+    }
+
+    my $content = decode_json $resp->content;
+    my %ids_by_account = map { $_->{account}{login} => $_->{id} } @$content;
+    return \%ids_by_account;
 }
 
 sub _generate_jwt {
@@ -150,7 +179,7 @@ GitHub::Apps::Auth - The fetcher that get a token for GitHub Apps
         private_key     => "<filename>", # when read private key from file
         private_key     => \$pk,         # when read private key from variable
         app_id          => <app_id>,
-        installation_id => <installation_id>
+        login           => <organization or user>
     );
     # This method returns the cached token inside an object.
     # However, refresh expired token automatically.
@@ -199,9 +228,15 @@ This parameter is the App ID of your GitHub Apps. Use the C<App ID> in the About
 
 =head4 installation_id
 
-B<Required: true>
+B<Required: exclusive to> C<login>
 
 A C<installation_id> is an identifier of installation Organizations or repositories in GitHub Apps. This value is can be obtained from a webhook that is fired during installation. Also can be obtained from webhook's C<Recent Deliveries> of GitHub apps settings.
+
+=head4 login
+
+B<Required: exclusive to> C<installation_id>
+
+C<login> is used for detecting installation_id. If not set C<installation_id> and set C<login>, search C<installation_id> from the list of installations.
 
 =head1 METHODS
 
