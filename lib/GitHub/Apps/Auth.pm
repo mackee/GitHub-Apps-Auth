@@ -34,7 +34,7 @@ use overload
             $new_self->_suffix($new_self->_suffix . $other);
         return $new_self;
     },
-    "eq" => sub { shift->issued_token eq shift };
+    "eq" => sub { $_[0]->issued_token eq "$_[1]" };
 
 sub new {
     my ($class, %args) = @_;
