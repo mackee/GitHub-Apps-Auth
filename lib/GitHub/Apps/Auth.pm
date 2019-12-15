@@ -6,7 +6,7 @@ use warnings;
 our $VERSION = "0.03";
 
 use Class::Accessor::Lite (
-    rw => [qw/token expires _prefix _suffix installation_id/],
+    rw => [qw/token expires installation_id/],
     ro => [qw/_furl private_key app_id/],
 );
 
@@ -17,24 +17,56 @@ use Furl;
 use JSON qw/decode_json/;
 use Time::Moment;
 
+sub _lazy(&) {
+    return GitHub::Apps::Auth::Lazy->new($_[0]);
+}
+
 use overload
     "\"\"" => sub { shift->issued_token },
     "." => sub {
-        my $self = shift;
-        my $other = shift;
-        my $reverse = shift;
-
-        $other = "" unless defined $other;
-
-        my $new_self = bless {}, ref $self;
-        %$new_self = %$self;
-
-        $reverse ?
-            $new_self->_prefix($other . $new_self->_prefix) :
-            $new_self->_suffix($new_self->_suffix . $other);
-        return $new_self;
+        my ($self, $other, $reverse) = @_;
+        return $reverse ?
+            _lazy { "$other" . "$self" } :
+            _lazy { "$self" . "$other" };
     },
-    "eq" => sub { $_[0]->issued_token eq "$_[1]" };
+    "eq" => sub {
+        my ($self, $other) = @_;
+        return _lazy { "$self" eq "$other" };
+    },
+    "ne" => sub {
+        my ($self, $other) = @_;
+        return _lazy { "$self" ne "$other" };
+    },
+    "lt" => sub {
+        my ($self, $other, $reverse) = @_;
+        return $reverse ?
+            _lazy { "$other" lt "$self" } :
+            _lazy { "$self" lt "$other" };
+    },
+    "le" => sub {
+        my ($self, $other, $reverse) = @_;
+        return $reverse ?
+            _lazy { "$other" le "$self" } :
+            _lazy { "$self" le "$other" };
+    },
+    "gt" => sub {
+        my ($self, $other, $reverse) = @_;
+        return $reverse ?
+            _lazy { "$other" gt "$self" } :
+            _lazy { "$self" gt "$other" };
+    },
+    "ge" => sub {
+        my ($self, $other, $reverse) = @_;
+        return $reverse ?
+            _lazy { "$other" ge "$self" } :
+            _lazy { "$self" ge "$other" };
+    },
+    "cmp" => sub {
+        my ($self, $other, $reverse) = @_;
+        return $reverse ?
+            _lazy { "$other" cmp "$self" } :
+            _lazy { "$self" cmp "$other" };
+    };
 
 sub new {
     my ($class, %args) = @_;
@@ -56,8 +88,6 @@ sub new {
         app_id => $args{app_id},
         expires => 0,
         _furl => Furl->new,
-        _prefix => "",
-        _suffix => "",
     };
     my $self = bless $klass, $class;
 
@@ -135,7 +165,7 @@ sub _fetch_access_token {
     my $tm = Time::Moment->from_string($expires);
     $self->expires($tm->epoch);
 
-    return $self->_prefix . $token . $self->_suffix;
+    return $token;
 }
 
 sub _post_to_access_token {
@@ -157,10 +187,115 @@ sub issued_token {
     my $self = shift;
 
     if ($self->_is_expired_token) {
-        return $self->_prefix . $self->_fetch_access_token . $self->_suffix;
+        return $self->_fetch_access_token;
     }
 
-    return $self->_prefix . $self->token . $self->_suffix;
+    return $self->token;
+}
+
+package
+    GitHub::Apps::Auth::Lazy;
+
+
+sub _lazy(&) {
+    return GitHub::Apps::Auth::Lazy->new($_[0]);
+}
+
+use overload
+    '""'   => sub { shift->{sub}->() . "" },
+    "bool" => sub { !!(shift->{sub}->()) },
+    "0+"   => sub { shift->{sub}->() + 0 },
+
+    "." => sub {
+        my ($self, $other, $reverse) = @_;
+        return $reverse ?
+            _lazy { "$other" . "$self" } :
+            _lazy { "$self" . "$other" };
+    },
+    "!" => sub {
+        my $self = shift;
+        return _lazy { !($self->{sub}->() || 0) },
+    },
+    "eq" => sub {
+        my ($self, $other) = @_;
+        return _lazy { "$self" eq "$other" };
+    },
+    "ne" => sub {
+        my ($self, $other) = @_;
+        return _lazy { "$self" ne "$other" };
+    },
+    "lt" => sub {
+        my ($self, $other, $reverse) = @_;
+        return $reverse ?
+            _lazy { "$other" lt "$self" } :
+            _lazy { "$self" lt "$other" };
+    },
+    "le" => sub {
+        my ($self, $other, $reverse) = @_;
+        return $reverse ?
+            _lazy { "$other" le "$self" } :
+            _lazy { "$self" le "$other" };
+    },
+    "gt" => sub {
+        my ($self, $other, $reverse) = @_;
+        return $reverse ?
+            _lazy { "$other" gt "$self" } :
+            _lazy { "$self" gt "$other" };
+    },
+    "ge" => sub {
+        my ($self, $other, $reverse) = @_;
+        return $reverse ?
+            _lazy { "$other" ge "$self" } :
+            _lazy { "$self" ge "$other" };
+    },
+    "cmp" => sub {
+        my ($self, $other, $reverse) = @_;
+        return $reverse ?
+            _lazy { "$other" cmp "$self" } :
+            _lazy { "$self" cmp "$other" };
+    },
+    "==" => sub {
+        my ($self, $other) = @_;
+        return _lazy { $self->{sub}->() == $other };
+    },
+    "!=" => sub {
+        my ($self, $other) = @_;
+        return _lazy { $self->{sub}->() != $other };
+    },
+    "<" => sub {
+        my ($self, $other, $reverse) = @_;
+        return $reverse ?
+            _lazy { $other < $self->{sub}->() } :
+            _lazy { $self->{sub}->() < $other };
+    },
+    "<=" => sub {
+        my ($self, $other, $reverse) = @_;
+        return $reverse ?
+            _lazy { $other <= $self->{sub}->() } :
+            _lazy { $self->{sub}->() <= $other };
+    },
+    ">" => sub {
+        my ($self, $other, $reverse) = @_;
+        return $reverse ?
+            _lazy { $other > $self->{sub}->() } :
+            _lazy { $self->{sub}->() > $other };
+    },
+    ">=" => sub {
+        my ($self, $other, $reverse) = @_;
+        return $reverse ?
+            _lazy { $other >= $self->{sub}->() } :
+            _lazy { $self->{sub}->() >= $other };
+    },
+    "<=>" => sub {
+        my ($self, $other, $reverse) = @_;
+        return $reverse ?
+            _lazy { $other <=> $self->{sub}->() } :
+            _lazy { $self->{sub}->() <=> $other };
+    };
+
+sub new {
+    my ($class, $sub) = @_;
+    return bless { sub => $sub }, $class;
 }
 
 1;

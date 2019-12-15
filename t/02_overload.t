@@ -29,16 +29,27 @@ my $g = mock_guard "GitHub::Apps::Auth" => {
     },
 };
 
-my $hash = { token => $auth };
+my $flag = $auth eq "1234567890";
+my $cmp = $auth cmp "1234567890";
 
-is $auth, "1234567890";
+is "$auth", "1234567890";
+ok $flag;
+ok $cmp == 0;
 sleep 1;
-is $auth, "1234567890";
+is "$auth", "1234567890";
+ok $flag;
+ok $cmp == 0;
 sleep 59;
-is $auth, "1234567890";
+is "$auth", "1234567890";
+ok $flag;
+ok $cmp == 0;
 sleep 1;
-is $auth, "1234567891";
+is "$auth", "1234567891";
+ok !$flag;
+ok $cmp > 0;
 sleep 1;
-is $auth, "1234567891";
+is "$auth", "1234567891";
+ok !$flag;
+ok $cmp > 0;
 
 done_testing;
