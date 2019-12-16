@@ -28,44 +28,6 @@ use overload
         return $reverse ?
             _lazy { "$other" . "$self" } :
             _lazy { "$self" . "$other" };
-    },
-    "eq" => sub {
-        my ($self, $other) = @_;
-        return _lazy { "$self" eq "$other" };
-    },
-    "ne" => sub {
-        my ($self, $other) = @_;
-        return _lazy { "$self" ne "$other" };
-    },
-    "lt" => sub {
-        my ($self, $other, $reverse) = @_;
-        return $reverse ?
-            _lazy { "$other" lt "$self" } :
-            _lazy { "$self" lt "$other" };
-    },
-    "le" => sub {
-        my ($self, $other, $reverse) = @_;
-        return $reverse ?
-            _lazy { "$other" le "$self" } :
-            _lazy { "$self" le "$other" };
-    },
-    "gt" => sub {
-        my ($self, $other, $reverse) = @_;
-        return $reverse ?
-            _lazy { "$other" gt "$self" } :
-            _lazy { "$self" gt "$other" };
-    },
-    "ge" => sub {
-        my ($self, $other, $reverse) = @_;
-        return $reverse ?
-            _lazy { "$other" ge "$self" } :
-            _lazy { "$self" ge "$other" };
-    },
-    "cmp" => sub {
-        my ($self, $other, $reverse) = @_;
-        return $reverse ?
-            _lazy { "$other" cmp "$self" } :
-            _lazy { "$self" cmp "$other" };
     };
 
 sub new {
@@ -203,94 +165,11 @@ sub _lazy(&) {
 
 use overload
     '""'   => sub { shift->{sub}->() . "" },
-    "bool" => sub { !!(shift->{sub}->()) },
-    "0+"   => sub { shift->{sub}->() + 0 },
-
     "." => sub {
         my ($self, $other, $reverse) = @_;
         return $reverse ?
             _lazy { "$other" . "$self" } :
             _lazy { "$self" . "$other" };
-    },
-    "!" => sub {
-        my $self = shift;
-        return _lazy { !($self->{sub}->() || 0) },
-    },
-    "eq" => sub {
-        my ($self, $other) = @_;
-        return _lazy { "$self" eq "$other" };
-    },
-    "ne" => sub {
-        my ($self, $other) = @_;
-        return _lazy { "$self" ne "$other" };
-    },
-    "lt" => sub {
-        my ($self, $other, $reverse) = @_;
-        return $reverse ?
-            _lazy { "$other" lt "$self" } :
-            _lazy { "$self" lt "$other" };
-    },
-    "le" => sub {
-        my ($self, $other, $reverse) = @_;
-        return $reverse ?
-            _lazy { "$other" le "$self" } :
-            _lazy { "$self" le "$other" };
-    },
-    "gt" => sub {
-        my ($self, $other, $reverse) = @_;
-        return $reverse ?
-            _lazy { "$other" gt "$self" } :
-            _lazy { "$self" gt "$other" };
-    },
-    "ge" => sub {
-        my ($self, $other, $reverse) = @_;
-        return $reverse ?
-            _lazy { "$other" ge "$self" } :
-            _lazy { "$self" ge "$other" };
-    },
-    "cmp" => sub {
-        my ($self, $other, $reverse) = @_;
-        return $reverse ?
-            _lazy { "$other" cmp "$self" } :
-            _lazy { "$self" cmp "$other" };
-    },
-    "==" => sub {
-        my ($self, $other) = @_;
-        return _lazy { $self->{sub}->() == $other };
-    },
-    "!=" => sub {
-        my ($self, $other) = @_;
-        return _lazy { $self->{sub}->() != $other };
-    },
-    "<" => sub {
-        my ($self, $other, $reverse) = @_;
-        return $reverse ?
-            _lazy { $other < $self->{sub}->() } :
-            _lazy { $self->{sub}->() < $other };
-    },
-    "<=" => sub {
-        my ($self, $other, $reverse) = @_;
-        return $reverse ?
-            _lazy { $other <= $self->{sub}->() } :
-            _lazy { $self->{sub}->() <= $other };
-    },
-    ">" => sub {
-        my ($self, $other, $reverse) = @_;
-        return $reverse ?
-            _lazy { $other > $self->{sub}->() } :
-            _lazy { $self->{sub}->() > $other };
-    },
-    ">=" => sub {
-        my ($self, $other, $reverse) = @_;
-        return $reverse ?
-            _lazy { $other >= $self->{sub}->() } :
-            _lazy { $self->{sub}->() >= $other };
-    },
-    "<=>" => sub {
-        my ($self, $other, $reverse) = @_;
-        return $reverse ?
-            _lazy { $other <=> $self->{sub}->() } :
-            _lazy { $self->{sub}->() <=> $other };
     };
 
 sub new {

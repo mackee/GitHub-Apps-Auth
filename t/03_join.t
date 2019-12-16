@@ -30,27 +30,15 @@ my $g = mock_guard "GitHub::Apps::Auth" => {
 };
 
 my $joined_auth = "x-access-token: $auth, extra-token: $auth";
-my $flag = $joined_auth eq "x-access-token: 1234567890, extra-token: 1234567890";
-my $cmp = $joined_auth cmp "x-access-token: 1234567890, extra-token: 1234567890";
 
 is "$joined_auth", "x-access-token: 1234567890, extra-token: 1234567890";
-ok $flag;
-ok $cmp == 0;
 sleep 1;
 is "$joined_auth", "x-access-token: 1234567890, extra-token: 1234567890";
-ok $flag;
-ok $cmp == 0;
 sleep 59;
 is "$joined_auth", "x-access-token: 1234567890, extra-token: 1234567890";
-ok $flag;
-ok $cmp == 0;
 sleep 1;
 is "$joined_auth", "x-access-token: 1234567891, extra-token: 1234567891";
-ok !$flag;
-ok $cmp >= 0;
 sleep 1;
 is "$joined_auth", "x-access-token: 1234567891, extra-token: 1234567891";
-ok !$flag;
-ok $cmp >= 0;
 
 done_testing;
