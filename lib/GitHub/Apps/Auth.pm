@@ -7,7 +7,7 @@ our $VERSION = "0.04";
 
 use Class::Accessor::Lite (
     rw => [qw/token expires installation_id/],
-    ro => [qw/_furl private_key app_id/],
+    ro => [qw/_furl private_key app_id api_base/],
 );
 
 use Carp;
@@ -41,6 +41,9 @@ sub new {
     if (!$args{installation_id} && !$args{login}) {
         croak "must be set installation_id or login.";
     }
+    if (!exists $args{api_base}) {
+        $args{api_base} = 'https://api.github.com';
+    }
 
     my $pk = Crypt::PK::RSA->new($args{private_key});
 
@@ -49,6 +52,7 @@ sub new {
         installation_id => $args{installation_id},
         app_id => $args{app_id},
         expires => 0,
+        api_base => $args{api_base},
         _furl => Furl->new,
     };
     my $self = bless $klass, $class;
@@ -71,7 +75,7 @@ sub installations {
     my $header = $self->_generate_request_header();
 
     my $resp = $self->_furl->get(
-        "https://api.github.com/app/installations",
+        $self->api_base . "/app/installations",
         $header,
     );
     if (!$resp->is_success) {
@@ -134,7 +138,7 @@ sub _post_to_access_token {
     my ($self, $installation_id, $header) = @_;
 
     return $self->_furl->post(
-        "https://api.github.com/app/installations/$installation_id/access_tokens",
+        $self->api_base . "/app/installations/$installation_id/access_tokens",
         $header,
     );
 }
@@ -251,6 +255,10 @@ A C<installation_id> is an identifier of installation Organizations or repositor
 B<Required: exclusive to> C<installation_id>
 
 C<login> is used for detecting installation_id. If not set C<installation_id> and set C<login>, search C<installation_id> from the list of installations.
+
+=head4 api_base
+
+The base URI for the github api. Defaults to L<https://api.github.com>. Specify this to use a local GitHub Enterprise server.
 
 =head1 METHODS
 
